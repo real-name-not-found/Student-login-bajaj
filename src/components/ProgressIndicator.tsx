@@ -16,7 +16,7 @@ const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({
     <div className="w-full mb-6">
       <div className="flex justify-between items-center mb-2">
         {sections.map((section, index) => (
-          <React.Fragment key={section.id}>
+          <React.Fragment key={section.sectionId}>
             {/* Circle indicator */}
             <div className="flex flex-col items-center">
               <div
@@ -28,6 +28,7 @@ const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({
                     ? "bg-student-primary text-white"
                     : "bg-gray-200 text-gray-600"
                 )}
+                data-testid={`progress-step-${index + 1}`}
               >
                 {index + 1}
               </div>

@@ -35,6 +35,7 @@ const Login: React.FC = () => {
       if (response.success) {
         // Save user info to sessionStorage for persistence
         sessionStorage.setItem('user', JSON.stringify(formData));
+        toast.success("Login successful");
         navigate('/form');
       }
     } finally {
@@ -63,6 +64,7 @@ const Login: React.FC = () => {
                 onChange={handleInputChange}
                 required
                 className="focus:border-student-primary"
+                data-testid="roll-number-input"
               />
             </div>
             <div className="space-y-2">
@@ -75,6 +77,7 @@ const Login: React.FC = () => {
                 onChange={handleInputChange}
                 required
                 className="focus:border-student-primary"
+                data-testid="name-input"
               />
             </div>
           </CardContent>
@@ -83,6 +86,7 @@ const Login: React.FC = () => {
               type="submit" 
               className="w-full bg-student-primary hover:bg-student-secondary" 
               disabled={isLoading}
+              data-testid="login-button"
             >
               {isLoading ? "Logging in..." : "Login"}
             </Button>

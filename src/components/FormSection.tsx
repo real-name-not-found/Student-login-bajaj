@@ -22,7 +22,7 @@ const FormSection: React.FC<FormSectionProps> = ({
   const { validateSection, currentSectionIndex, setCurrentSectionIndex } = useForm();
 
   const handleNext = () => {
-    if (validateSection(section.id)) {
+    if (validateSection(section.sectionId)) {
       setCurrentSectionIndex(currentSectionIndex + 1);
     }
   };
@@ -32,7 +32,7 @@ const FormSection: React.FC<FormSectionProps> = ({
   };
 
   const handleSubmitForm = () => {
-    if (validateSection(section.id)) {
+    if (validateSection(section.sectionId)) {
       onSubmit();
     }
   };
@@ -47,7 +47,7 @@ const FormSection: React.FC<FormSectionProps> = ({
       </CardHeader>
       <CardContent className="space-y-4">
         {section.fields.map((field) => (
-          <FormField key={field.id} field={field} />
+          <FormField key={field.fieldId} field={field} />
         ))}
 
         <div className="flex justify-between mt-6">
@@ -57,6 +57,7 @@ const FormSection: React.FC<FormSectionProps> = ({
               onClick={handlePrev}
               variant="outline"
               className="border-student-primary text-student-primary hover:bg-student-accent hover:text-student-secondary"
+              data-testid="prev-button"
             >
               Previous
             </Button>
@@ -68,6 +69,7 @@ const FormSection: React.FC<FormSectionProps> = ({
                 type="button" 
                 onClick={handleSubmitForm}
                 className="bg-student-secondary hover:bg-student-primary"
+                data-testid="submit-button"
               >
                 Submit
               </Button>
@@ -76,6 +78,7 @@ const FormSection: React.FC<FormSectionProps> = ({
                 type="button" 
                 onClick={handleNext}
                 className="bg-student-primary hover:bg-student-secondary"
+                data-testid="next-button"
               >
                 Next
               </Button>

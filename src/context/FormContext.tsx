@@ -1,6 +1,6 @@
 
 import React, { createContext, useContext, useState, ReactNode } from "react";
-import { FormStructure, FormSection } from "@/services/api";
+import { FormStructure, FormSection, FormField } from "@/services/api";
 
 interface FormContextProps {
   formData: Record<string, any>;
@@ -9,8 +9,8 @@ interface FormContextProps {
   setFormStructure: (structure: FormStructure) => void;
   currentSectionIndex: number;
   setCurrentSectionIndex: (index: number) => void;
-  validateSection: (sectionId: string) => boolean;
-  getFieldError: (fieldId: string, value: any) => string | null;
+  validateSection: (sectionId: number) => boolean;
+  getFieldError: (field: FormField, value: any) => string | null;
 }
 
 const FormContext = createContext<FormContextProps | undefined>(undefined);
@@ -29,60 +29,42 @@ export const FormProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   // Validate a field based on its validation rules
-  const getFieldError = (fieldId: string, value: any): string | null => {
-    if (!formStructure) return null;
-
-    // Find the field in any section
-    let field = null;
-    for (const section of formStructure.sections) {
-      const foundField = section.fields.find(f => f.id === fieldId);
-      if (foundField) {
-        field = foundField;
-        break;
-      }
+  const getFieldError = (field: FormField, value: any): string | null => {
+    // Skip validation if value is empty and field is not required
+    if (!field.required && (value === undefined || value === null || value === "")) {
+      return null;
     }
-
-    if (!field || !field.validation) return null;
-
-    const validation = field.validation;
 
     // Required validation
-    if (validation.required && (value === undefined || value === null || value === "")) {
-      return `${field.label} is required`;
+    if (field.required && (value === undefined || value === null || value === "")) {
+      return field.validation?.message || `${field.label} is required`;
     }
 
-    // Skip other validations if value is empty and not required
+    // Skip other validations if value is empty 
     if (value === undefined || value === null || value === "") {
       return null;
     }
 
-    // Type-specific validations
-    if (typeof value === "string") {
+    // String validations for text, email, tel, textarea
+    if (typeof value === "string" && ["text", "email", "tel", "textarea"].includes(field.type)) {
       // Min length validation
-      if (validation.minLength && value.length < validation.minLength) {
-        return `${field.label} must be at least ${validation.minLength} characters`;
+      if (field.minLength && value.length < field.minLength) {
+        return `${field.label} must be at least ${field.minLength} characters`;
       }
 
       // Max length validation
-      if (validation.maxLength && value.length > validation.maxLength) {
-        return `${field.label} cannot exceed ${validation.maxLength} characters`;
+      if (field.maxLength && value.length > field.maxLength) {
+        return `${field.label} cannot exceed ${field.maxLength} characters`;
       }
 
-      // Pattern validation
-      if (validation.pattern && !new RegExp(validation.pattern).test(value)) {
-        return `${field.label} is not in a valid format`;
-      }
-    }
-
-    if (typeof value === "number") {
-      // Min value validation
-      if (validation.min !== undefined && value < validation.min) {
-        return `${field.label} must be at least ${validation.min}`;
+      // Email validation
+      if (field.type === "email" && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+        return "Please enter a valid email address";
       }
 
-      // Max value validation
-      if (validation.max !== undefined && value > validation.max) {
-        return `${field.label} cannot exceed ${validation.max}`;
+      // Tel validation
+      if (field.type === "tel" && !/^[0-9+\-() ]+$/.test(value)) {
+        return "Please enter a valid phone number";
       }
     }
 
@@ -90,18 +72,15 @@ export const FormProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   // Validate all fields in a section
-  const validateSection = (sectionId: string): boolean => {
+  const validateSection = (sectionId: number): boolean => {
     if (!formStructure) return false;
 
-    const section = formStructure.sections.find(s => s.id === sectionId);
+    const section = formStructure.sections.find(s => s.sectionId === sectionId);
     if (!section) return false;
 
     for (const field of section.fields) {
-      if (!field.validation?.required && (formData[field.id] === undefined || formData[field.id] === null || formData[field.id] === "")) {
-        continue; // Skip non-required empty fields
-      }
-
-      const error = getFieldError(field.id, formData[field.id]);
+      const value = formData[field.fieldId];
+      const error = getFieldError(field, value);
       if (error) {
         return false;
       }

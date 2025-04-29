@@ -17,60 +17,80 @@ interface FormFieldProps {
 const FormField: React.FC<FormFieldProps> = ({ field }) => {
   const { formData, updateFormData, getFieldError } = useForm();
   const [error, setError] = useState<string | null>(null);
-  const value = formData[field.id];
+  const value = formData[field.fieldId];
   
   // Validate on value change
   useEffect(() => {
     if (value !== undefined) {
-      const validationError = getFieldError(field.id, value);
+      const validationError = getFieldError(field, value);
       setError(validationError);
     }
-  }, [value, field.id, getFieldError]);
+  }, [value, field, getFieldError]);
 
   // Handle change for different field types
   const handleChange = (newValue: any) => {
-    updateFormData(field.id, newValue);
+    updateFormData(field.fieldId, newValue);
   };
 
   const renderField = () => {
     switch (field.type) {
       case "text":
+      case "tel":
       case "email":
-      case "number":
         return (
           <Input
-            id={field.id}
+            id={field.fieldId}
             type={field.type}
             placeholder={field.placeholder}
             value={value || ""}
             onChange={(e) => handleChange(e.target.value)}
             className={cn(error && "border-red-500")}
+            data-testid={field.dataTestId}
+            maxLength={field.maxLength}
           />
         );
       
       case "textarea":
         return (
           <Textarea
-            id={field.id}
+            id={field.fieldId}
             placeholder={field.placeholder}
             value={value || ""}
             onChange={(e) => handleChange(e.target.value)}
             className={cn(error && "border-red-500")}
+            data-testid={field.dataTestId}
+            maxLength={field.maxLength}
           />
         );
       
-      case "select":
+      case "date":
+        return (
+          <Input
+            id={field.fieldId}
+            type="date"
+            value={value || ""}
+            onChange={(e) => handleChange(e.target.value)}
+            className={cn(error && "border-red-500")}
+            data-testid={field.dataTestId}
+          />
+        );
+      
+      case "dropdown":
         return (
           <Select
             value={value || ""}
             onValueChange={handleChange}
           >
-            <SelectTrigger className={cn(error && "border-red-500")}>
+            <SelectTrigger className={cn(error && "border-red-500")} data-testid={field.dataTestId}>
               <SelectValue placeholder={field.placeholder || "Select option"} />
             </SelectTrigger>
             <SelectContent>
               {field.options?.map((option) => (
-                <SelectItem key={option.value} value={option.value}>
+                <SelectItem 
+                  key={option.value} 
+                  value={option.value} 
+                  data-testid={option.dataTestId}
+                >
                   {option.label}
                 </SelectItem>
               ))}
@@ -87,8 +107,9 @@ const FormField: React.FC<FormFieldProps> = ({ field }) => {
               return (
                 <div key={option.value} className="flex items-center space-x-2">
                   <Checkbox
-                    id={`${field.id}-${option.value}`}
+                    id={`${field.fieldId}-${option.value}`}
                     checked={isChecked}
+                    data-testid={option.dataTestId}
                     onCheckedChange={(checked) => {
                       if (checked) {
                         // Add to array if checked
@@ -104,7 +125,7 @@ const FormField: React.FC<FormFieldProps> = ({ field }) => {
                     }}
                   />
                   <Label 
-                    htmlFor={`${field.id}-${option.value}`}
+                    htmlFor={`${field.fieldId}-${option.value}`}
                     className="text-sm font-normal cursor-pointer"
                   >
                     {option.label}
@@ -124,9 +145,13 @@ const FormField: React.FC<FormFieldProps> = ({ field }) => {
           >
             {field.options?.map((option) => (
               <div key={option.value} className="flex items-center space-x-2">
-                <RadioGroupItem value={option.value} id={`${field.id}-${option.value}`} />
+                <RadioGroupItem 
+                  value={option.value} 
+                  id={`${field.fieldId}-${option.value}`}
+                  data-testid={option.dataTestId}
+                />
                 <Label 
-                  htmlFor={`${field.id}-${option.value}`}
+                  htmlFor={`${field.fieldId}-${option.value}`}
                   className="text-sm font-normal cursor-pointer"
                 >
                   {option.label}
@@ -143,11 +168,11 @@ const FormField: React.FC<FormFieldProps> = ({ field }) => {
 
   return (
     <div className="space-y-2 mb-4">
-      <Label htmlFor={field.id} className={cn(field.validation?.required && "after:content-['*'] after:ml-0.5 after:text-red-500")}>
+      <Label htmlFor={field.fieldId} className={cn(field.required && "after:content-['*'] after:ml-0.5 after:text-red-500")}>
         {field.label}
       </Label>
       {renderField()}
-      {error && <p className="text-sm text-red-500">{error}</p>}
+      {error && <p className="text-sm text-red-500" data-testid={`error-${field.dataTestId}`}>{error}</p>}
     </div>
   );
 };

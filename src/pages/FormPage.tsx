@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FormProvider, useForm } from "@/context/FormContext";
-import apiService, { User } from "@/services/api";
+import apiService from "@/services/api";
 import FormSection from "@/components/FormSection";
 import ProgressIndicator from "@/components/ProgressIndicator";
 import { toast } from "@/components/ui/sonner";
@@ -30,8 +30,10 @@ const FormPage: React.FC = () => {
     const fetchForm = async () => {
       setIsLoading(true);
       try {
-        const response = await apiService.getForm();
-        if (response.success && response.form) {
+        const user = JSON.parse(userString);
+        const response = await apiService.getForm(user.rollNumber);
+        
+        if ('form' in response && response.success) {
           setFormStructure(response.form);
         } else {
           toast.error("Failed to load form");
@@ -89,8 +91,8 @@ const FormPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-student-light py-8 px-4">
       <div className="container max-w-2xl mx-auto">
-        <h1 className="text-2xl sm:text-3xl font-bold text-center mb-6 text-student-secondary">
-          {formStructure.title}
+        <h1 className="text-2xl sm:text-3xl font-bold text-center mb-6 text-student-secondary" data-testid="form-title">
+          {formStructure.formTitle}
         </h1>
 
         <ProgressIndicator
