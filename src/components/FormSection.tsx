@@ -1,0 +1,90 @@
+
+import React from "react";
+import { FormSection as FormSectionType } from "@/services/api";
+import FormField from "./FormField";
+import { useForm } from "@/context/FormContext";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+
+interface FormSectionProps {
+  section: FormSectionType;
+  isFirst: boolean;
+  isLast: boolean;
+  onSubmit: () => void;
+}
+
+const FormSection: React.FC<FormSectionProps> = ({
+  section,
+  isFirst,
+  isLast,
+  onSubmit,
+}) => {
+  const { validateSection, currentSectionIndex, setCurrentSectionIndex } = useForm();
+
+  const handleNext = () => {
+    if (validateSection(section.id)) {
+      setCurrentSectionIndex(currentSectionIndex + 1);
+    }
+  };
+
+  const handlePrev = () => {
+    setCurrentSectionIndex(currentSectionIndex - 1);
+  };
+
+  const handleSubmitForm = () => {
+    if (validateSection(section.id)) {
+      onSubmit();
+    }
+  };
+
+  return (
+    <Card className="w-full animate-fade-in">
+      <CardHeader>
+        <CardTitle className="text-xl font-semibold text-student-secondary">{section.title}</CardTitle>
+        {section.description && (
+          <CardDescription>{section.description}</CardDescription>
+        )}
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {section.fields.map((field) => (
+          <FormField key={field.id} field={field} />
+        ))}
+
+        <div className="flex justify-between mt-6">
+          {!isFirst && (
+            <Button 
+              type="button" 
+              onClick={handlePrev}
+              variant="outline"
+              className="border-student-primary text-student-primary hover:bg-student-accent hover:text-student-secondary"
+            >
+              Previous
+            </Button>
+          )}
+          
+          <div className="ml-auto">
+            {isLast ? (
+              <Button 
+                type="button" 
+                onClick={handleSubmitForm}
+                className="bg-student-secondary hover:bg-student-primary"
+              >
+                Submit
+              </Button>
+            ) : (
+              <Button 
+                type="button" 
+                onClick={handleNext}
+                className="bg-student-primary hover:bg-student-secondary"
+              >
+                Next
+              </Button>
+            )}
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
+
+export default FormSection;
